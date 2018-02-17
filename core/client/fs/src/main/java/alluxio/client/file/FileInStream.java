@@ -279,6 +279,7 @@ public class FileInStream extends InputStream implements BoundedStream, Position
               Protocol.AsyncCacheRequest.newBuilder().setBlockId(blockId).setLength(blockLength)
                   .setOpenUfsBlockOptions(mOptions.getOpenUfsBlockOptions(blockId))
                   .setSourceHost(dataSource.getHost()).setSourcePort(dataSource.getDataPort())
+                  .setFairRideUserId(mOptions.getOptions().getFairRideUserId())
                   .build();
           Channel channel = mContext.acquireNettyChannel(worker);
           try {

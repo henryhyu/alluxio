@@ -41,6 +41,7 @@ public final class OpenFileOptions {
   private int mMaxUfsReadConcurrency;
   /** The location policy to determine the worker location to serve UFS block reads. */
   private BlockLocationPolicy mUfsReadLocationPolicy;
+  private String mFairRideUserId;
 
   /**
    * @return the default {@link InStreamOptions}
@@ -66,6 +67,7 @@ public final class OpenFileOptions {
     mUfsReadLocationPolicy = BlockLocationPolicy.Factory.create(blockLocationPolicyCreateOptions);
     mMaxUfsReadConcurrency =
         Configuration.getInt(PropertyKey.USER_UFS_BLOCK_READ_CONCURRENCY_MAX);
+    mFairRideUserId = "DEFAULT_USER";
   }
 
   /**
@@ -130,6 +132,10 @@ public final class OpenFileOptions {
    */
   public String getUfsReadLocationPolicyClass() {
     return mUfsReadLocationPolicy.getClass().getCanonicalName();
+  }
+
+  public String getFairRideUserId() {
+    return mFairRideUserId;
   }
 
   /**
@@ -225,6 +231,11 @@ public final class OpenFileOptions {
    */
   public OpenFileOptions setMaxUfsReadConcurrency(int maxUfsReadConcurrency) {
     mMaxUfsReadConcurrency = maxUfsReadConcurrency;
+    return this;
+  }
+
+  public OpenFileOptions setFairRideUserId(String fairRideUserId) {
+    mFairRideUserId = fairRideUserId;
     return this;
   }
 

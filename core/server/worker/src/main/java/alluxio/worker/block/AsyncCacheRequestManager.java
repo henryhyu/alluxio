@@ -33,6 +33,8 @@ import java.util.concurrent.ExecutorService;
 
 import javax.annotation.concurrent.ThreadSafe;
 
+import alluxio.worker.fairride.User;
+
 /**
  * Handles client requests to asynchronously cache blocks. Responsible for managing the local
  * worker resources and intelligent pruning of duplicate or meaningless requests.
@@ -69,6 +71,7 @@ public class AsyncCacheRequestManager {
   public void submitRequest(Protocol.AsyncCacheRequest request) {
     long blockId = request.getBlockId();
     long blockLength = request.getLength();
+    User.onUserCacheBlock(request.getFairRideUserId(), blockId);
     if (mPendingRequests.putIfAbsent(blockId, request) != null) {
       // This block is already planned.
       return;
