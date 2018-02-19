@@ -47,6 +47,8 @@ import java.util.concurrent.ExecutorService;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import alluxio.worker.fairride.User;
+
 /**
  * This handler handles block read request. Check more information in {@link AbstractReadHandler}.
  */
@@ -161,6 +163,7 @@ public final class BlockReadHandler extends AbstractReadHandler<BlockReadRequest
             String metricName = "BytesReadAlluxio";
             context.setBlockReader(reader);
             context.setCounter(MetricsSystem.workerCounter(metricName));
+            User.onUserAccessBlock(request.getFairRideUserId(), request.getId());
             mWorker.accessBlock(request.getSessionId(), request.getId());
             ((FileChannel) reader.getChannel()).position(request.getStart());
             return;

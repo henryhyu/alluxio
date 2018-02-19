@@ -121,7 +121,8 @@ public final class LocalFilePacketReader implements PacketReader {
       mChannel = context.acquireNettyChannel(address);
       Protocol.LocalBlockOpenRequest request =
           Protocol.LocalBlockOpenRequest.newBuilder().setBlockId(mBlockId)
-              .setPromote(options.getOptions().getReadType().isPromote()).build();
+              .setPromote(options.getOptions().getReadType().isPromote())
+              .setFairRideUserId(options.getOptions().getFairRideUserId()).build();
       try {
         ProtoMessage message = NettyRPC
             .call(NettyRPCContext.defaults().setChannel(mChannel).setTimeout(READ_TIMEOUT_MS),

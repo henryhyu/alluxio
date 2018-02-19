@@ -207,6 +207,21 @@ public final class Protocol {
      * </pre>
      */
     alluxio.proto.dataserver.Protocol.OpenUfsBlockOptionsOrBuilder getOpenUfsBlockOptionsOrBuilder();
+
+    // optional string fairRideUserId = 8;
+    /**
+     * <code>optional string fairRideUserId = 8;</code>
+     */
+    boolean hasFairRideUserId();
+    /**
+     * <code>optional string fairRideUserId = 8;</code>
+     */
+    java.lang.String getFairRideUserId();
+    /**
+     * <code>optional string fairRideUserId = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getFairRideUserIdBytes();
   }
   /**
    * Protobuf type {@code alluxio.proto.dataserver.ReadRequest}
@@ -305,6 +320,11 @@ public final class Protocol {
             case 56: {
               bitField0_ |= 0x00000010;
               promote_ = input.readBool();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000080;
+              fairRideUserId_ = input.readBytes();
               break;
             }
           }
@@ -501,6 +521,49 @@ public final class Protocol {
       return openUfsBlockOptions_;
     }
 
+    // optional string fairRideUserId = 8;
+    public static final int FAIRRIDEUSERID_FIELD_NUMBER = 8;
+    private java.lang.Object fairRideUserId_;
+    /**
+     * <code>optional string fairRideUserId = 8;</code>
+     */
+    public boolean hasFairRideUserId() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional string fairRideUserId = 8;</code>
+     */
+    public java.lang.String getFairRideUserId() {
+      java.lang.Object ref = fairRideUserId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          fairRideUserId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string fairRideUserId = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getFairRideUserIdBytes() {
+      java.lang.Object ref = fairRideUserId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        fairRideUserId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       blockId_ = 0L;
       offset_ = 0L;
@@ -509,6 +572,7 @@ public final class Protocol {
       promote_ = false;
       packetSize_ = 0L;
       openUfsBlockOptions_ = alluxio.proto.dataserver.Protocol.OpenUfsBlockOptions.getDefaultInstance();
+      fairRideUserId_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -542,6 +606,9 @@ public final class Protocol {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBool(7, promote_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeBytes(8, getFairRideUserIdBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -579,6 +646,10 @@ public final class Protocol {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, promote_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getFairRideUserIdBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -720,6 +791,8 @@ public final class Protocol {
           openUfsBlockOptionsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000040);
+        fairRideUserId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -780,6 +853,10 @@ public final class Protocol {
         } else {
           result.openUfsBlockOptions_ = openUfsBlockOptionsBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.fairRideUserId_ = fairRideUserId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -816,6 +893,11 @@ public final class Protocol {
         }
         if (other.hasOpenUfsBlockOptions()) {
           mergeOpenUfsBlockOptions(other.getOpenUfsBlockOptions());
+        }
+        if (other.hasFairRideUserId()) {
+          bitField0_ |= 0x00000080;
+          fairRideUserId_ = other.fairRideUserId_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1241,6 +1323,80 @@ public final class Protocol {
           openUfsBlockOptions_ = null;
         }
         return openUfsBlockOptionsBuilder_;
+      }
+
+      // optional string fairRideUserId = 8;
+      private java.lang.Object fairRideUserId_ = "";
+      /**
+       * <code>optional string fairRideUserId = 8;</code>
+       */
+      public boolean hasFairRideUserId() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional string fairRideUserId = 8;</code>
+       */
+      public java.lang.String getFairRideUserId() {
+        java.lang.Object ref = fairRideUserId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          fairRideUserId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string fairRideUserId = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFairRideUserIdBytes() {
+        java.lang.Object ref = fairRideUserId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          fairRideUserId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string fairRideUserId = 8;</code>
+       */
+      public Builder setFairRideUserId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        fairRideUserId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string fairRideUserId = 8;</code>
+       */
+      public Builder clearFairRideUserId() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        fairRideUserId_ = getDefaultInstance().getFairRideUserId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string fairRideUserId = 8;</code>
+       */
+      public Builder setFairRideUserIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        fairRideUserId_ = value;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:alluxio.proto.dataserver.ReadRequest)
@@ -7107,6 +7263,21 @@ public final class Protocol {
      * <code>optional bool promote = 2;</code>
      */
     boolean getPromote();
+
+    // optional string fairRideUserId = 3;
+    /**
+     * <code>optional string fairRideUserId = 3;</code>
+     */
+    boolean hasFairRideUserId();
+    /**
+     * <code>optional string fairRideUserId = 3;</code>
+     */
+    java.lang.String getFairRideUserId();
+    /**
+     * <code>optional string fairRideUserId = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getFairRideUserIdBytes();
   }
   /**
    * Protobuf type {@code alluxio.proto.dataserver.LocalBlockOpenRequest}
@@ -7171,6 +7342,11 @@ public final class Protocol {
             case 16: {
               bitField0_ |= 0x00000002;
               promote_ = input.readBool();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              fairRideUserId_ = input.readBytes();
               break;
             }
           }
@@ -7245,9 +7421,53 @@ public final class Protocol {
       return promote_;
     }
 
+    // optional string fairRideUserId = 3;
+    public static final int FAIRRIDEUSERID_FIELD_NUMBER = 3;
+    private java.lang.Object fairRideUserId_;
+    /**
+     * <code>optional string fairRideUserId = 3;</code>
+     */
+    public boolean hasFairRideUserId() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string fairRideUserId = 3;</code>
+     */
+    public java.lang.String getFairRideUserId() {
+      java.lang.Object ref = fairRideUserId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          fairRideUserId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string fairRideUserId = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getFairRideUserIdBytes() {
+      java.lang.Object ref = fairRideUserId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        fairRideUserId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       blockId_ = 0L;
       promote_ = false;
+      fairRideUserId_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7267,6 +7487,9 @@ public final class Protocol {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBool(2, promote_);
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getFairRideUserIdBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -7283,6 +7506,10 @@ public final class Protocol {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(2, promote_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getFairRideUserIdBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7408,6 +7635,8 @@ public final class Protocol {
         bitField0_ = (bitField0_ & ~0x00000001);
         promote_ = false;
         bitField0_ = (bitField0_ & ~0x00000002);
+        fairRideUserId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -7444,6 +7673,10 @@ public final class Protocol {
           to_bitField0_ |= 0x00000002;
         }
         result.promote_ = promote_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.fairRideUserId_ = fairRideUserId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7465,6 +7698,11 @@ public final class Protocol {
         }
         if (other.hasPromote()) {
           setPromote(other.getPromote());
+        }
+        if (other.hasFairRideUserId()) {
+          bitField0_ |= 0x00000004;
+          fairRideUserId_ = other.fairRideUserId_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -7555,6 +7793,80 @@ public final class Protocol {
       public Builder clearPromote() {
         bitField0_ = (bitField0_ & ~0x00000002);
         promote_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional string fairRideUserId = 3;
+      private java.lang.Object fairRideUserId_ = "";
+      /**
+       * <code>optional string fairRideUserId = 3;</code>
+       */
+      public boolean hasFairRideUserId() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string fairRideUserId = 3;</code>
+       */
+      public java.lang.String getFairRideUserId() {
+        java.lang.Object ref = fairRideUserId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          fairRideUserId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string fairRideUserId = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFairRideUserIdBytes() {
+        java.lang.Object ref = fairRideUserId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          fairRideUserId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string fairRideUserId = 3;</code>
+       */
+      public Builder setFairRideUserId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        fairRideUserId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string fairRideUserId = 3;</code>
+       */
+      public Builder clearFairRideUserId() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        fairRideUserId_ = getDefaultInstance().getFairRideUserId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string fairRideUserId = 3;</code>
+       */
+      public Builder setFairRideUserIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        fairRideUserId_ = value;
         onChanged();
         return this;
       }
@@ -10176,45 +10488,46 @@ public final class Protocol {
   static {
     java.lang.String[] descriptorData = {
       "\n\031dataserver/protocol.proto\022\030alluxio.pro" +
-      "to.dataserver\032\027dataserver/status.proto\"\304" +
+      "to.dataserver\032\027dataserver/status.proto\"\334" +
       "\001\n\013ReadRequest\022\020\n\010block_id\030\001 \001(\003\022\016\n\006offs" +
       "et\030\002 \001(\003\022\016\n\006length\030\003 \001(\003\022\016\n\006cancel\030\004 \001(\010" +
       "\022\017\n\007promote\030\007 \001(\010\022\023\n\013packet_size\030\005 \001(\003\022M" +
       "\n\026open_ufs_block_options\030\006 \001(\0132-.alluxio" +
-      ".proto.dataserver.OpenUfsBlockOptions\"\306\001" +
-      "\n\021AsyncCacheRequest\022\020\n\010block_id\030\001 \001(\003\022\023\n" +
-      "\013source_host\030\002 \001(\t\022\023\n\013source_port\030\003 \001(\005\022" +
-      "M\n\026open_ufs_block_options\030\004 \001(\0132-.alluxi",
-      "o.proto.dataserver.OpenUfsBlockOptions\022\016" +
-      "\n\006length\030\005 \001(\003\022\026\n\016fairRideUserId\030\006 \001(\t\"\243" +
-      "\001\n\023OpenUfsBlockOptions\022\020\n\010ufs_path\030\001 \001(\t" +
-      "\022\026\n\016offset_in_file\030\002 \001(\003\022\022\n\nblock_size\030\003" +
-      " \001(\003\022\035\n\025maxUfsReadConcurrency\030\004 \001(\005\022\017\n\007m" +
-      "ountId\030\005 \001(\003\022\020\n\010no_cache\030\006 \001(\010\022\014\n\004user\030\007" +
-      " \001(\t\"\333\001\n\014WriteRequest\0223\n\004type\030\001 \001(\0162%.al" +
-      "luxio.proto.dataserver.RequestType\022\n\n\002id" +
-      "\030\002 \001(\003\022\016\n\006offset\030\003 \001(\003\022\014\n\004tier\030\004 \001(\005\022\013\n\003" +
-      "eof\030\005 \001(\010\022\016\n\006cancel\030\006 \001(\010\022O\n\027create_ufs_",
-      "file_options\030\007 \001(\0132..alluxio.proto.datas" +
-      "erver.CreateUfsFileOptions\"f\n\024CreateUfsF" +
-      "ileOptions\022\020\n\010ufs_path\030\001 \001(\t\022\r\n\005owner\030\002 " +
-      "\001(\t\022\r\n\005group\030\003 \001(\t\022\014\n\004mode\030\004 \001(\005\022\020\n\010moun" +
-      "t_id\030\005 \001(\003\"J\n\010Response\022-\n\006status\030\001 \001(\0162\035" +
-      ".alluxio.proto.status.PStatus\022\017\n\007message" +
-      "\030\002 \001(\t\"i\n\014ReadResponse\0229\n\004type\030\001 \001(\0162+.a" +
-      "lluxio.proto.dataserver.ReadResponse.Typ" +
-      "e\"\036\n\004Type\022\026\n\022UFS_READ_HEARTBEAT\020\001\"\013\n\tHea" +
-      "rtbeat\":\n\025LocalBlockOpenRequest\022\020\n\010block",
-      "_id\030\001 \001(\003\022\017\n\007promote\030\002 \001(\010\"&\n\026LocalBlock" +
-      "OpenResponse\022\014\n\004path\030\001 \001(\t\"*\n\026LocalBlock" +
-      "CloseRequest\022\020\n\010block_id\030\001 \001(\003\"o\n\027LocalB" +
-      "lockCreateRequest\022\020\n\010block_id\030\001 \001(\003\022\014\n\004t" +
-      "ier\030\003 \001(\005\022\030\n\020space_to_reserve\030\004 \001(\003\022\032\n\022o" +
-      "nly_reserve_space\030\005 \001(\010\"(\n\030LocalBlockCre" +
-      "ateResponse\022\014\n\004path\030\001 \001(\t\"=\n\031LocalBlockC" +
-      "ompleteRequest\022\020\n\010block_id\030\001 \001(\003\022\016\n\006canc" +
-      "el\030\002 \001(\010*.\n\013RequestType\022\021\n\rALLUXIO_BLOCK" +
-      "\020\000\022\014\n\010UFS_FILE\020\001"
+      ".proto.dataserver.OpenUfsBlockOptions\022\026\n" +
+      "\016fairRideUserId\030\010 \001(\t\"\306\001\n\021AsyncCacheRequ" +
+      "est\022\020\n\010block_id\030\001 \001(\003\022\023\n\013source_host\030\002 \001" +
+      "(\t\022\023\n\013source_port\030\003 \001(\005\022M\n\026open_ufs_bloc",
+      "k_options\030\004 \001(\0132-.alluxio.proto.dataserv" +
+      "er.OpenUfsBlockOptions\022\016\n\006length\030\005 \001(\003\022\026" +
+      "\n\016fairRideUserId\030\006 \001(\t\"\243\001\n\023OpenUfsBlockO" +
+      "ptions\022\020\n\010ufs_path\030\001 \001(\t\022\026\n\016offset_in_fi" +
+      "le\030\002 \001(\003\022\022\n\nblock_size\030\003 \001(\003\022\035\n\025maxUfsRe" +
+      "adConcurrency\030\004 \001(\005\022\017\n\007mountId\030\005 \001(\003\022\020\n\010" +
+      "no_cache\030\006 \001(\010\022\014\n\004user\030\007 \001(\t\"\333\001\n\014WriteRe" +
+      "quest\0223\n\004type\030\001 \001(\0162%.alluxio.proto.data" +
+      "server.RequestType\022\n\n\002id\030\002 \001(\003\022\016\n\006offset" +
+      "\030\003 \001(\003\022\014\n\004tier\030\004 \001(\005\022\013\n\003eof\030\005 \001(\010\022\016\n\006can",
+      "cel\030\006 \001(\010\022O\n\027create_ufs_file_options\030\007 \001" +
+      "(\0132..alluxio.proto.dataserver.CreateUfsF" +
+      "ileOptions\"f\n\024CreateUfsFileOptions\022\020\n\010uf" +
+      "s_path\030\001 \001(\t\022\r\n\005owner\030\002 \001(\t\022\r\n\005group\030\003 \001" +
+      "(\t\022\014\n\004mode\030\004 \001(\005\022\020\n\010mount_id\030\005 \001(\003\"J\n\010Re" +
+      "sponse\022-\n\006status\030\001 \001(\0162\035.alluxio.proto.s" +
+      "tatus.PStatus\022\017\n\007message\030\002 \001(\t\"i\n\014ReadRe" +
+      "sponse\0229\n\004type\030\001 \001(\0162+.alluxio.proto.dat" +
+      "aserver.ReadResponse.Type\"\036\n\004Type\022\026\n\022UFS" +
+      "_READ_HEARTBEAT\020\001\"\013\n\tHeartbeat\"R\n\025LocalB",
+      "lockOpenRequest\022\020\n\010block_id\030\001 \001(\003\022\017\n\007pro" +
+      "mote\030\002 \001(\010\022\026\n\016fairRideUserId\030\003 \001(\t\"&\n\026Lo" +
+      "calBlockOpenResponse\022\014\n\004path\030\001 \001(\t\"*\n\026Lo" +
+      "calBlockCloseRequest\022\020\n\010block_id\030\001 \001(\003\"o" +
+      "\n\027LocalBlockCreateRequest\022\020\n\010block_id\030\001 " +
+      "\001(\003\022\014\n\004tier\030\003 \001(\005\022\030\n\020space_to_reserve\030\004 " +
+      "\001(\003\022\032\n\022only_reserve_space\030\005 \001(\010\"(\n\030Local" +
+      "BlockCreateResponse\022\014\n\004path\030\001 \001(\t\"=\n\031Loc" +
+      "alBlockCompleteRequest\022\020\n\010block_id\030\001 \001(\003" +
+      "\022\016\n\006cancel\030\002 \001(\010*.\n\013RequestType\022\021\n\rALLUX",
+      "IO_BLOCK\020\000\022\014\n\010UFS_FILE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10226,7 +10539,7 @@ public final class Protocol {
           internal_static_alluxio_proto_dataserver_ReadRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_alluxio_proto_dataserver_ReadRequest_descriptor,
-              new java.lang.String[] { "BlockId", "Offset", "Length", "Cancel", "Promote", "PacketSize", "OpenUfsBlockOptions", });
+              new java.lang.String[] { "BlockId", "Offset", "Length", "Cancel", "Promote", "PacketSize", "OpenUfsBlockOptions", "FairRideUserId", });
           internal_static_alluxio_proto_dataserver_AsyncCacheRequest_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_alluxio_proto_dataserver_AsyncCacheRequest_fieldAccessorTable = new
@@ -10274,7 +10587,7 @@ public final class Protocol {
           internal_static_alluxio_proto_dataserver_LocalBlockOpenRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_alluxio_proto_dataserver_LocalBlockOpenRequest_descriptor,
-              new java.lang.String[] { "BlockId", "Promote", });
+              new java.lang.String[] { "BlockId", "Promote", "FairRideUserId", });
           internal_static_alluxio_proto_dataserver_LocalBlockOpenResponse_descriptor =
             getDescriptor().getMessageTypes().get(9);
           internal_static_alluxio_proto_dataserver_LocalBlockOpenResponse_fieldAccessorTable = new

@@ -21,6 +21,11 @@ public class User {
     LOG.debug("User " + id + " cached block " + blockId);
   }
 
+  public static void onUserAccessBlock(String id, long blockId) {
+    User u = (User.users.containsKey(id))? User.users.get(id) : new User(id);
+    LOG.debug("User " + id + " accessed block " + blockId);
+  }
+
   public static void logUsers() {
     Set set = User.users.entrySet();
     Iterator iterator = set.iterator();

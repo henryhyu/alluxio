@@ -34,6 +34,8 @@ import java.util.concurrent.ExecutorService;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import alluxio.worker.fairride.User;
+
 /**
  * Netty handler that handles short circuit read requests.
  */
@@ -131,6 +133,7 @@ class ShortCircuitBlockReadHandler extends ChannelInboundHandlerAdapter {
                 }
               }
               mLockId = mWorker.lockBlock(mSessionId, request.getBlockId());
+              User.onUserAccessBlock(request.getFairRideUserId(), request.getBlockId());
               mWorker.accessBlock(mSessionId, request.getBlockId());
             } else {
               LOG.warn("Lock block {} without releasing previous block lock {}.",

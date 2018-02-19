@@ -109,6 +109,7 @@ public class BlockInStream extends InputStream implements BoundedStream, Seekabl
         Protocol.ReadRequest.newBuilder().setBlockId(blockId).setPromote(promote);
     // Add UFS fallback options
     builder.setOpenUfsBlockOptions(options.getOpenUfsBlockOptions(blockId));
+    builder.setFairRideUserId(options.getOptions().getFairRideUserId());
 
     boolean shortCircuit = Configuration.getBoolean(PropertyKey.USER_SHORT_CIRCUIT_ENABLED);
     boolean sourceSupportsDomainSocket = NettyUtils.isDomainSocketSupported(dataSource);

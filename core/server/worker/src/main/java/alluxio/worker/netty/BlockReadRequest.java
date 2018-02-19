@@ -22,6 +22,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class BlockReadRequest extends ReadRequest {
   private final Protocol.OpenUfsBlockOptions mOpenUfsBlockOptions;
   private final boolean mPromote;
+  private final String mFairRideUserId;
 
   /**
    * Creates an instance of {@link BlockReadRequest}.
@@ -36,6 +37,11 @@ public final class BlockReadRequest extends ReadRequest {
       mOpenUfsBlockOptions = request.getOpenUfsBlockOptions();
     } else {
       mOpenUfsBlockOptions = null;
+    }
+    if (request.hasFairRideUserId()) {
+      mFairRideUserId = request.getFairRideUserId();
+    } else {
+      mFairRideUserId = null;
     }
     mPromote = request.getPromote();
     // Note that we do not need to seek to offset since the block worker is created at the offset.
@@ -54,6 +60,14 @@ public final class BlockReadRequest extends ReadRequest {
   public Protocol.OpenUfsBlockOptions getOpenUfsBlockOptions() {
     return mOpenUfsBlockOptions;
   }
+
+  /**
+   * @return the FairRide user ID
+   */
+  public String getFairRideUserId() {
+    return mFairRideUserId;
+  }
+
 
   /**
    * @return true if the block is persisted in UFS

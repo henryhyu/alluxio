@@ -27,6 +27,8 @@ message ReadRequest {
 
   // This is only set for UFS block read.
   optional OpenUfsBlockOptions open_ufs_block_options = 6;
+
+  optional string fairRideUserId = 8;
 }
 
 // Options for caching a block asynchronously
@@ -115,6 +117,7 @@ message Heartbeat {
 message LocalBlockOpenRequest {
   optional int64 block_id = 1;
   optional bool promote = 2;
+  optional string fairRideUserId = 3;
 }
 
 // next available id: 2
