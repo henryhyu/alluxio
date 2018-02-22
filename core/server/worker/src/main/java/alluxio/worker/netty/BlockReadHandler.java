@@ -34,6 +34,7 @@ import alluxio.worker.block.BlockWorker;
 import alluxio.worker.block.UnderFileSystemBlockReader;
 import alluxio.worker.block.io.BlockReader;
 import alluxio.worker.block.io.LocalFileBlockReader;
+import alluxio.worker.fairride.User;
 
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
@@ -46,8 +47,6 @@ import java.nio.channels.FileChannel;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.concurrent.NotThreadSafe;
-
-import alluxio.worker.fairride.User;
 
 /**
  * This handler handles block read request. Check more information in {@link AbstractReadHandler}.

@@ -68,7 +68,6 @@ public final class BlockReadRequest extends ReadRequest {
     return mFairRideUserId;
   }
 
-
   /**
    * @return true if the block is persisted in UFS
    */

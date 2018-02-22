@@ -22,6 +22,7 @@ import alluxio.util.io.BufferUtils;
 import alluxio.util.network.NetworkAddressUtils;
 import alluxio.worker.block.io.BlockReader;
 import alluxio.worker.block.io.BlockWriter;
+import alluxio.worker.fairride.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.concurrent.ThreadSafe;
-
-import alluxio.worker.fairride.User;
 
 /**
  * Handles client requests to asynchronously cache blocks. Responsible for managing the local
@@ -71,7 +70,19 @@ public class AsyncCacheRequestManager {
   public void submitRequest(Protocol.AsyncCacheRequest request) {
     long blockId = request.getBlockId();
     long blockLength = request.getLength();
-    User.onUserCacheBlock(request.getFairRideUserId(), blockId);
+    long remainingCapacity = mBlockWorker.getStoreMeta().getCapacityBytesOnTiers().get("MEM");
+    if (
+          !User.shouldCacheBlock(
+            request.getFairRideUserId(),
+            blockId,
+            blockLength,
+            remainingCapacity
+          )
+    ) {
+      LOG.warn("Cache attempt rejected");
+      return;
+    }
+    LOG.warn("Cache attempt accepted");
     if (mPendingRequests.putIfAbsent(blockId, request) != null) {
       // This block is already planned.
       return;
@@ -102,6 +113,9 @@ public class AsyncCacheRequestManager {
         }
         LOG.debug("Result of async caching block {}: {}", blockId, result);
         mPendingRequests.remove(blockId);
+        if (result) {
+          User.onUserCacheBlock(request.getFairRideUserId(), blockId, blockLength);
+        }
       });
     } catch (Exception e) {
       // RuntimeExceptions (e.g. RejectedExecutionException) may be thrown in extreme cases when the

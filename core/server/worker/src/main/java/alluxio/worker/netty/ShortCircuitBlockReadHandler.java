@@ -24,6 +24,7 @@ import alluxio.util.IdUtils;
 import alluxio.util.proto.ProtoMessage;
 import alluxio.worker.block.BlockLockManager;
 import alluxio.worker.block.BlockWorker;
+import alluxio.worker.fairride.User;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -33,8 +34,6 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.concurrent.NotThreadSafe;
-
-import alluxio.worker.fairride.User;
 
 /**
  * Netty handler that handles short circuit read requests.
