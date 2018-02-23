@@ -69,8 +69,6 @@ public final class User implements Comparable<User> {
 
     u.mBlocksCached.add(blockId);
 
-    u.incrementBlockPriority(blockId);
-
     if (!sBlockIdsToUsers.containsKey(blockId)) {
       sBlockIdsToUsers.put(blockId, new HashSet<String>());
     }
@@ -221,6 +219,11 @@ public final class User implements Comparable<User> {
       return true;
     }
     return !u.fewerThanXBytesUntilUserPriorityBlock(willNeedToEvict, priorityOfNewBlock);
+  }
+
+  public static void incrementBlockPriorityForUser(long blockId, String userId) {
+    User u = getOrCreateUser(userId);
+    u.incrementBlockPriority(blockId);
   }
 
   /**
