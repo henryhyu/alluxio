@@ -88,19 +88,23 @@ public final class User implements Comparable<User> {
    * @param blockId Block ID of block that is being cached
    */
   public static void onUserAccessBlock(String userId, long blockId) {
-    //Create user if one does not exist
     User u = getOrCreateUser(userId);
 
     u.incrementBlockPriority(blockId);
 
-    //TODO(caitscarberry) probabilistic delay (check that this is called in place
-    //in thread that would actually delay read)
+    if (!u.mBlocksCached.contains(blockId)) {
+      //expected delaying (see section 3.4 of FairRide paper)
+      double diskBandwidth = 100; //in MB/second
+      double diskDelay = sBlockIdsToSizes.get(blockId)/(double)(diskBandwidth * 1024 * 1024 * .001);
+      double pBlock = 1.0/((double)(sBlockIdsToUsers.get(blockId).size() + 1));
 
-    //If the user is not paying to cache this file, make them cache it
-    //We're guaranteed to have the size of the block already
-    //because this method only gets called for blocks that
-    //have already been cached
-    if (!sBlockIdsToUsers.get(blockId).contains(userId)) {
+      try {
+        Thread.sleep((int)(diskDelay*pBlock));
+      } catch (InterruptedException e) {
+        LOG.warn("Delay failed");
+      }
+
+      //after the delay, cache the file for the user
       u.onUserCacheBlock(userId, blockId, sBlockIdsToSizes.get(blockId));
     }
   }
