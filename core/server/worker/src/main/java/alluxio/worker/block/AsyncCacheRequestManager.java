@@ -72,7 +72,7 @@ public class AsyncCacheRequestManager {
     long blockLength = request.getLength();
     String fairRideUserId = request.getFairRideUserId();
     long remainingCapacity = mBlockWorker.getStoreMeta().getCapacityBytesOnTiers().get("MEM")
-      - mBlockWorker.getStoreMeta().getUsedBytesOnTiers().get("MEM");
+        - mBlockWorker.getStoreMeta().getUsedBytesOnTiers().get("MEM");
     User.incrementBlockPriorityForUser(blockId, fairRideUserId);
     if (
           !User.shouldCacheBlock(

@@ -21,17 +21,23 @@ public final class UserTest {
     //Cache block 0 and make it priority 2 for user 1
     User.onUserCacheBlock("1", 0, blockSizes[0]);
     User.onUserAccessBlock("1", 0);
+    User.onUserAccessBlock("1", 0);
+
+    Iterator<Long> blockIterator = User.getBlockIterator();
+    Assert.assertTrue(blockIterator.next() == 0);
 
     //Cache block 1 and make it priority 1 for user 1
     User.onUserCacheBlock("1", 1, blockSizes[1]);
+    User.onUserAccessBlock("1", 1);
 
     //Block 1 should be nominated for eviction because it has lowest
     //priority
-    Iterator<Long> blockIterator = User.getBlockIterator();
+    blockIterator = User.getBlockIterator();
     Assert.assertTrue(blockIterator.next() == 1);
 
     //Cache block 2 for user 2 and make it priority 1
     User.onUserCacheBlock("2", 2, blockSizes[2]);
+    User.onUserAccessBlock("2", 2);
 
     //User 1 cost: 30, user 2 cost: 40
     //Block 2 should be nominated for eviction because user 2
@@ -91,6 +97,7 @@ public final class UserTest {
     //Cache block 0 and make it priority 2 for user 1
     User.onUserCacheBlock("1", 0, blockSizes[0]);
     User.onUserAccessBlock("1", 0);
+    User.onUserAccessBlock("1", 0);
 
     //If the remaining cache capacity is 5 bytes, caching
     //block 1 will evict block 0. Block 0 has a higher
@@ -105,6 +112,7 @@ public final class UserTest {
     //User 2 now has the highest cost, so its blocks will be
     //nominated for eviction first.
     User.onUserCacheBlock("2", 2, blockSizes[2]);
+    User.onUserAccessBlock("2", 2);
     User.onUserAccessBlock("2", 2);
 
     //Block 2 will be nominated for eviction, but user 2 gives it higher

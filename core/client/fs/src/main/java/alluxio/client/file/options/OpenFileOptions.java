@@ -134,6 +134,9 @@ public final class OpenFileOptions {
     return mUfsReadLocationPolicy.getClass().getCanonicalName();
   }
 
+  /**
+   * @return the FairRide user ID of the user opening this file
+   */
   public String getFairRideUserId() {
     return mFairRideUserId;
   }
@@ -234,6 +237,10 @@ public final class OpenFileOptions {
     return this;
   }
 
+  /**
+   * @param fairRideUserId the ID for the user opening this file
+   * @return the updated options object
+   */
   public OpenFileOptions setFairRideUserId(String fairRideUserId) {
     mFairRideUserId = fairRideUserId;
     return this;
@@ -259,13 +266,14 @@ public final class OpenFileOptions {
     return Objects.equal(mCacheLocationPolicy, that.mCacheLocationPolicy)
         && Objects.equal(mReadType, that.mReadType)
         && Objects.equal(mMaxUfsReadConcurrency, that.mMaxUfsReadConcurrency)
-        && Objects.equal(mUfsReadLocationPolicy, that.mUfsReadLocationPolicy);
+        && Objects.equal(mUfsReadLocationPolicy, that.mUfsReadLocationPolicy)
+        && Objects.equal(mFairRideUserId, that.mFairRideUserId);
   }
 
   @Override
   public int hashCode() {
     return Objects.hashCode(mCacheLocationPolicy, mReadType, mMaxUfsReadConcurrency,
-        mUfsReadLocationPolicy);
+        mUfsReadLocationPolicy, mFairRideUserId);
   }
 
   @Override
@@ -275,6 +283,7 @@ public final class OpenFileOptions {
         .add("maxUfsReadConcurrency", mMaxUfsReadConcurrency)
         .add("readType", mReadType)
         .add("ufsReadLocationPolicy", mUfsReadLocationPolicy)
+        .add("fairRideUserId", mFairRideUserId)
         .toString();
   }
 }

@@ -96,7 +96,7 @@ public final class BlockReadHandlerTest extends ReadHandlerTest {
   protected RPCProtoMessage buildReadRequest(long offset, long len) {
     Protocol.ReadRequest readRequest =
         Protocol.ReadRequest.newBuilder().setBlockId(1L).setOffset(offset).setLength(len)
-            .setPacketSize(PACKET_SIZE).build();
+            .setPacketSize(PACKET_SIZE).setFairRideUserId("OTHER_USER").build();
     return new RPCProtoMessage(new ProtoMessage(readRequest), null);
   }
 }

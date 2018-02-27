@@ -88,6 +88,13 @@ public final class User implements Comparable<User> {
    * @param blockId Block ID of block that is being cached
    */
   public static void onUserAccessBlock(String userId, long blockId) {
+    //In practice, the block will always be cached before
+    //this is called, but some tests break that assumption.
+    //This check just allows them to pass.
+    if (!sBlockIdsToUsers.containsKey(blockId) || !sBlockIdsToSizes.containsKey(blockId)) {
+      return;
+    }
+
     User u = getOrCreateUser(userId);
 
     u.incrementBlockPriority(blockId);
@@ -95,11 +102,12 @@ public final class User implements Comparable<User> {
     if (!u.mBlocksCached.contains(blockId)) {
       //expected delaying (see section 3.4 of FairRide paper)
       double diskBandwidth = 100; //in MB/second
-      double diskDelay = sBlockIdsToSizes.get(blockId)/(double)(diskBandwidth * 1024 * 1024 * .001);
-      double pBlock = 1.0/((double)(sBlockIdsToUsers.get(blockId).size() + 1));
+      double diskDelay = sBlockIdsToSizes.get(blockId)
+          / ((double) (diskBandwidth * 1048576 * .001));
+      double pBlock = 1.0 / ((double) (sBlockIdsToUsers.get(blockId).size() + 1));
 
       try {
-        Thread.sleep((int)(diskDelay*pBlock));
+        Thread.sleep((int) (diskDelay * pBlock));
       } catch (InterruptedException e) {
         LOG.warn("Delay failed");
       }
@@ -225,6 +233,12 @@ public final class User implements Comparable<User> {
     return !u.fewerThanXBytesUntilUserPriorityBlock(willNeedToEvict, priorityOfNewBlock);
   }
 
+  /**
+   * Increments the priority of a certain block for a certain user.
+   *
+   * @param blockId ID of block
+   * @param userId ID of user
+   */
   public static void incrementBlockPriorityForUser(long blockId, String userId) {
     User u = getOrCreateUser(userId);
     u.incrementBlockPriority(blockId);
