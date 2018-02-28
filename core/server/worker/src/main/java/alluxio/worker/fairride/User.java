@@ -34,6 +34,8 @@ public final class User implements Comparable<User> {
   private static Map<Long, Long> sBlockIdsToSizes =  new ConcurrentHashMap<>();
   //TODO(caitscarberry): verify whether blocks are immutable
 
+  private static final int BUDGET = 540 / 2;
+
   /**This user's ID.*/
   private String mId;
   /**The blocks this user has cached.*/
@@ -76,6 +78,19 @@ public final class User implements Comparable<User> {
 
     if (!sBlockIdsToSizes.containsKey(blockId)) {
       sBlockIdsToSizes.put(blockId, blockSize);
+    }
+
+    for (long otherBlockId : u.getCachedBlocksByPriority()) {
+      if (u.getCost() <= BUDGET) {
+        break;
+      }
+
+      //If this block is putting us over budget and
+      //other users are caching it, stop caching it
+      if (sBlockIdsToUsers.get(otherBlockId).size() > 1) {
+        sBlockIdsToUsers.get(otherBlockId).remove(userId);
+        u.mBlocksCached.remove(otherBlockId);
+      }
     }
   }
 
