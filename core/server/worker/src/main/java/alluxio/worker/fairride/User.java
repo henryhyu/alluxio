@@ -89,18 +89,8 @@ public final class User implements Comparable<User> {
     if (!sBlockIdsToSizes.containsKey(blockId)) {
       sBlockIdsToSizes.put(blockId, blockSize);
     }
-
-    for (long otherBlockId : u.getCachedBlocksByPriority()) {
-      if (u.getCost() <= BUDGET) {
-        break;
-      }
-
-      //If this block is putting us over budget and
-      //other users are caching it, stop caching it
-      if (sBlockIdsToUsers.get(otherBlockId).size() > 1) {
-        sBlockIdsToUsers.get(otherBlockId).remove(userId);
-        u.mBlocksCached.remove(otherBlockId);
-      }
+    if (!userId.equals("UNKNOWN_USER")) {
+      getOrCreateUser("UNKNOWN_USER").removeBlock(blockId);
     }
   }
 
@@ -125,22 +115,28 @@ public final class User implements Comparable<User> {
     u.incrementBlockPriority(blockId);
 
     if (!u.mBlocksCached.contains(blockId)) {
-      //expected delaying (see section 3.4 of FairRide paper)
-      double diskDelay = sBlockIdsToSizes.get(blockId)
-          / ((double) (DISK_BANDWIDTH * 1048576 * .001));
-      double pBlock = 1.0 / ((double) (sBlockIdsToUsers.get(blockId).size() + 1));
+      //Don't force blocking if block is marked for eviction
+      //because no other user is actually paying for it
+      if (!getOrCreateUser("UNKNOWN_USER").mBlocksCached.contains(blockId)) {
+        LOG.warn("Delaying on block " + Long.toString(blockId) + " for user " + userId);
+        //expected delaying (see section 3.4 of FairRide paper)
+        double diskDelay = sBlockIdsToSizes.get(blockId)
+            / ((double) (DISK_BANDWIDTH * 1048576 * .001));
+        double pBlock = 1.0 / ((double) (sBlockIdsToUsers.get(blockId).size() + 1));
 
-      if (DO_BLOCKING) {
-        try {
-          Thread.sleep((int) (diskDelay * pBlock));
-        } catch (InterruptedException e) {
-          LOG.warn("Delay failed");
+        if (DO_BLOCKING) {
+          try {
+            Thread.sleep((int) (diskDelay * pBlock));
+          } catch (InterruptedException e) {
+            LOG.warn("Delay failed");
+          }
         }
       }
-
       //after the delay, cache the file for the user
       u.onUserCacheBlock(userId, blockId, sBlockIdsToSizes.get(blockId));
     }
+
+    u.enforceBudget();
   }
 
   /**
@@ -251,16 +247,6 @@ public final class User implements Comparable<User> {
     User u  = getOrCreateUser(userId);
     double priorityOfNewBlock = u.getBlockPriority(blockId);
 
-    //Don't cache when it would evict a higher-priority block
-    //from the user's personal cache
-    long blockCost = blockSize;
-    if (sBlockIdsToUsers.containsKey(blockId)) {
-      blockCost /= (sBlockIdsToUsers.get(blockId).size() + 1);
-    }
-    if (u.getCost() + blockCost > BUDGET && u.getLowestBlockPriority() > priorityOfNewBlock) {
-      return false;
-    }
-
     //Don't cache when it would evict a block cached by the same user
     //with a higher priority
     long willNeedToEvict = blockSize - remainingCapacity;
@@ -299,9 +285,24 @@ public final class User implements Comparable<User> {
    * @return cost of user
    */
   public double getCost() {
+    //Blocks given to UNKNOWN_USER are marked for
+    //eviction, so this user should always be treated
+    //as having the highest cost
+    if (mId.equals("UNKNOWN_USER")) {
+      return Double.MAX_VALUE;
+    }
     double cost = 0;
     for (Long blockId : mBlocksCached) {
       double usersCachingBlock = (double) sBlockIdsToUsers.get(blockId).size();
+
+      //UNKNOWN_USER never pays its share for its blocks.
+      //usersCachingBlock will always be greater than 0 because
+      //by this point, the user calling this method is guaranteed
+      //not to be UNKNOWN_USER.
+      if (sBlockIdsToUsers.get(blockId).contains("UNKNOWN_USER")) {
+        usersCachingBlock--;
+      }
+
       cost += (double) sBlockIdsToSizes.get(blockId) / usersCachingBlock;
     }
     return cost;
@@ -360,24 +361,6 @@ public final class User implements Comparable<User> {
   }
 
   /**
-   * Get the minimum priority value from the user's personal cache.
-   *
-   * @return priority of lowest-priority block from the user's personal cache
-   * or -1 if there is none
-   */
-  private double getLowestBlockPriority() {
-    double minPriority = -1;
-
-    for (Long blockId : mBlocksCached) {
-      double priority = getBlockPriority(blockId);
-      if (priority < minPriority) {
-        minPriority = priority;
-      }
-    }
-    return minPriority;
-  }
-
-  /**
    * Returns priority of this block for this user. If user has never
    * accessed this block, priority is 1.
    *
@@ -405,12 +388,52 @@ public final class User implements Comparable<User> {
 
     while (blocks.hasNext() && bytes < x) {
       long blockId = blocks.next();
-      if (getBlockPriority(blockId) > priority) {
+      if (mBlocksCached.contains(blockId) && getBlockPriority(blockId) > priority) {
         return true;
       }
       bytes += sBlockIdsToSizes.get(blockId);
     }
 
     return false;
+  }
+
+  /**
+   * Evicts blocks from a user's personal cache until they are within
+   * their budget. If no one else is caching the block, it will
+   * be marked for eviction, but will NOT be evicted until room
+   * is requested in the cache.
+   */
+  private void enforceBudget() {
+    //Blocks evicted for budget reasons are given to UNKNOWN_USER,
+    //so we don't enforce budget limits for that user
+    if (mId.equals("UNKNOWN_USER") || getCost() <= BUDGET) {
+      return;
+    }
+
+    for (long otherBlockId : getCachedBlocksByPriority()) {
+      if (getCost() <= BUDGET) {
+        break;
+      }
+
+      //We have to keep the record of this block somewhere,
+      //because otherwise it will never be put up for eviction.
+      //UNKNOWN_USER is treated as having the highest cost, so
+      //blocks given to it will be put up first for eviction
+      if (sBlockIdsToUsers.get(otherBlockId).size() == 1) {
+        onUserCacheBlock("UNKNOWN_USER", otherBlockId, sBlockIdsToSizes.get(otherBlockId));
+      }
+
+      removeBlock(otherBlockId);
+    }
+  }
+
+  /**
+   * Removes a block from the user's personal cache.
+   *
+   * @param blockId the block to remove
+   */
+  private void removeBlock(long blockId) {
+    sBlockIdsToUsers.get(blockId).remove(mId);
+    mBlocksCached.remove(blockId);
   }
 }
