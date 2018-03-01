@@ -2090,6 +2090,21 @@ public final class PropertyKey implements Comparable<PropertyKey> {
           .setDescription("Whether to enable start JVM monitor thread on worker.")
           .build();
 
+  //
+  // FairRide related properties
+  //
+  public static final PropertyKey FAIRRIDE_BLOCKING_ON =
+      new Builder(Name.FAIRRIDE_BLOCKING_ON)
+          .setDefaultValue(true)
+          .setDescription("Do probabilistic delay.")
+          .build();
+
+  public static final PropertyKey FAIRRIDE_DISK_BANDWIDTH =
+      new Builder(Name.FAIRRIDE_DISK_BANDWIDTH)
+          .setDefaultValue(150)
+          .setDescription("Disk bandwidth for determining delay.")
+          .build();
+
   /**
    * A nested class to hold named string constants for their corresponding properties.
    * Used for setting configuration in integration tests.
@@ -2585,6 +2600,14 @@ public final class PropertyKey implements Comparable<PropertyKey> {
         "alluxio.jvm.monitor.sleep.interval";
     public static final String MASTER_JVM_MONITOR_ENABLED = "alluxio.master.jvm.monitor.enabled";
     public static final String WORKER_JVM_MONITOR_ENABLED = "alluxio.worker.jvm.monitor.enabled";
+
+    //
+    // FairRide related properties
+    //
+    public static final String FAIRRIDE_DISK_BANDWIDTH =
+        "alluxio.fairride.disk.bandwidth";
+    public static final String FAIRRIDE_BLOCKING_ON =
+        "alluxio.fairride.blocking.on";
 
     private Name() {} // prevent instantiation
   }

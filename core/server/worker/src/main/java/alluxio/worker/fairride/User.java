@@ -1,5 +1,8 @@
 package alluxio.worker.fairride;
 
+import alluxio.Configuration;
+import alluxio.PropertyKey;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +37,14 @@ public final class User implements Comparable<User> {
   private static Map<Long, Long> sBlockIdsToSizes =  new ConcurrentHashMap<>();
   //TODO(caitscarberry): verify whether blocks are immutable
 
-  private static final int BUDGET = 540 / 2;
+  private static final long BUDGET =
+      Configuration.getBytes(PropertyKey.WORKER_MEMORY_SIZE) / 2;
+
+  private static final boolean DO_BLOCKING =
+      Configuration.getBoolean(PropertyKey.FAIRRIDE_BLOCKING_ON);
+
+  private static final double DISK_BANDWIDTH =
+      Configuration.getDouble(PropertyKey.FAIRRIDE_DISK_BANDWIDTH);
 
   /**This user's ID.*/
   private String mId;
@@ -116,15 +126,16 @@ public final class User implements Comparable<User> {
 
     if (!u.mBlocksCached.contains(blockId)) {
       //expected delaying (see section 3.4 of FairRide paper)
-      double diskBandwidth = 100; //in MB/second
       double diskDelay = sBlockIdsToSizes.get(blockId)
-          / ((double) (diskBandwidth * 1048576 * .001));
+          / ((double) (DISK_BANDWIDTH * 1048576 * .001));
       double pBlock = 1.0 / ((double) (sBlockIdsToUsers.get(blockId).size() + 1));
 
-      try {
-        Thread.sleep((int) (diskDelay * pBlock));
-      } catch (InterruptedException e) {
-        LOG.warn("Delay failed");
+      if (DO_BLOCKING) {
+        try {
+          Thread.sleep((int) (diskDelay * pBlock));
+        } catch (InterruptedException e) {
+          LOG.warn("Delay failed");
+        }
       }
 
       //after the delay, cache the file for the user
@@ -239,6 +250,17 @@ public final class User implements Comparable<User> {
   ) {
     User u  = getOrCreateUser(userId);
     double priorityOfNewBlock = u.getBlockPriority(blockId);
+
+    //Don't cache when it would evict a higher-priority block
+    //from the user's personal cache
+    long blockCost = blockSize;
+    if (sBlockIdsToUsers.containsKey(blockId)) {
+      blockCost /= (sBlockIdsToUsers.get(blockId).size() + 1);
+    }
+    if (u.getCost() + blockCost > BUDGET && u.getLowestBlockPriority() > priorityOfNewBlock) {
+      return false;
+    }
+
     //Don't cache when it would evict a block cached by the same user
     //with a higher priority
     long willNeedToEvict = blockSize - remainingCapacity;
@@ -335,6 +357,24 @@ public final class User implements Comparable<User> {
       .collect(Collectors.toMap(Map.Entry::getKey,
                      Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new))
       .keySet();
+  }
+
+  /**
+   * Get the minimum priority value from the user's personal cache.
+   *
+   * @return priority of lowest-priority block from the user's personal cache
+   * or -1 if there is none
+   */
+  private double getLowestBlockPriority() {
+    double minPriority = -1;
+
+    for (Long blockId : mBlocksCached) {
+      double priority = getBlockPriority(blockId);
+      if (priority < minPriority) {
+        minPriority = priority;
+      }
+    }
+    return minPriority;
   }
 
   /**
