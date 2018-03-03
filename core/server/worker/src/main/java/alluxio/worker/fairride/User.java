@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.List;
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.Collections;
@@ -32,13 +31,13 @@ public final class User implements Comparable<User> {
   /**Maps user ID to user.*/
   private static Map<String, User> sUsers =  new ConcurrentHashMap<>();
   /**Maps block ID to the users who are caching it.*/
-  private static Map<Long, HashSet<String>> sBlockIdsToUsers = new ConcurrentHashMap<>();
+  private static Map<Long, Map<String, Boolean>> sBlockIdsToUsers = new ConcurrentHashMap<>();
   /**Maps block ID to the block size.*/
   private static Map<Long, Long> sBlockIdsToSizes =  new ConcurrentHashMap<>();
   //TODO(caitscarberry): verify whether blocks are immutable
 
   private static final long BUDGET =
-      Configuration.getBytes(PropertyKey.WORKER_MEMORY_SIZE) / 2;
+      Configuration.getBytes(PropertyKey.WORKER_MEMORY_SIZE) / 3;
 
   private static final boolean DO_BLOCKING =
       Configuration.getBoolean(PropertyKey.FAIRRIDE_BLOCKING_ON);
@@ -49,7 +48,7 @@ public final class User implements Comparable<User> {
   /**This user's ID.*/
   private String mId;
   /**The blocks this user has cached.*/
-  private Set<Long> mBlocksCached = new HashSet<>();
+  private Map<Long, Boolean> mBlocksCached = new ConcurrentHashMap<>();
 
   private Map<Long, Double> mBlocksToPriority = new ConcurrentHashMap<>();
 
@@ -79,12 +78,12 @@ public final class User implements Comparable<User> {
     //Create user if one does not exist
     User u = getOrCreateUser(userId);
 
-    u.mBlocksCached.add(blockId);
+    u.mBlocksCached.put(blockId, true);
 
     if (!sBlockIdsToUsers.containsKey(blockId)) {
-      sBlockIdsToUsers.put(blockId, new HashSet<String>());
+      sBlockIdsToUsers.put(blockId, new ConcurrentHashMap<String, Boolean>());
     }
-    sBlockIdsToUsers.get(blockId).add(userId);
+    sBlockIdsToUsers.get(blockId).put(userId, true);
 
     if (!sBlockIdsToSizes.containsKey(blockId)) {
       sBlockIdsToSizes.put(blockId, blockSize);
@@ -92,6 +91,8 @@ public final class User implements Comparable<User> {
     if (!userId.equals("UNKNOWN_USER")) {
       getOrCreateUser("UNKNOWN_USER").removeBlock(blockId);
     }
+
+    u.enforceBudget();
   }
 
   /**
@@ -114,29 +115,47 @@ public final class User implements Comparable<User> {
 
     u.incrementBlockPriority(blockId);
 
-    if (!u.mBlocksCached.contains(blockId)) {
-      //Don't force blocking if block is marked for eviction
-      //because no other user is actually paying for it
-      if (!getOrCreateUser("UNKNOWN_USER").mBlocksCached.contains(blockId)) {
-        LOG.warn("Delaying on block " + Long.toString(blockId) + " for user " + userId);
-        //expected delaying (see section 3.4 of FairRide paper)
-        double diskDelay = sBlockIdsToSizes.get(blockId)
+    if (!u.mBlocksCached.containsKey(blockId)) {
+      double diskDelay = sBlockIdsToSizes.get(blockId)
             / ((double) (DISK_BANDWIDTH * 1048576 * .001));
+
+      //If another actual user is caching the block, use expected delaying.
+      //If the block has been marked for eviction, treat it as a cache miss.
+      if (!getOrCreateUser("UNKNOWN_USER").mBlocksCached.containsKey(blockId)) {
+        //expected delaying (see section 3.4 of FairRide paper)
         double pBlock = 1.0 / ((double) (sBlockIdsToUsers.get(blockId).size() + 1));
 
         if (DO_BLOCKING) {
+          LOG.warn("Delaying on block " + Long.toString(blockId) + " for user " + userId);
           try {
             Thread.sleep((int) (diskDelay * pBlock));
           } catch (InterruptedException e) {
             LOG.warn("Delay failed");
           }
         }
+      } else {
+        LOG.warn(
+            "Treating access to block {} as miss for user {}; delaying {} ms",
+            Long.toString(blockId),
+            userId,
+            diskDelay
+        );
+        //Do this irrespective of whether blocking is enabled, because
+        //evicting files that are over budget seems to be part of
+        //max-min fairness and not a modification added by FairRide.
+        //(see section 3.3 of paper)
+        try {
+          Thread.sleep((int) (diskDelay));
+        } catch (InterruptedException e) {
+          LOG.warn("Failed to simulate cache miss");
+        }
       }
       //after the delay, cache the file for the user
       u.onUserCacheBlock(userId, blockId, sBlockIdsToSizes.get(blockId));
+    } else {
+      LOG.warn("User {} is caching file {}", userId, blockId);
+      u.enforceBudget();
     }
-
-    u.enforceBudget();
   }
 
   /**
@@ -156,7 +175,7 @@ public final class User implements Comparable<User> {
     //because we want to keep a running count of how many times
     //the file has been accessed by each user
 
-    for (String userId : sBlockIdsToUsers.get(blockId)) {
+    for (String userId : sBlockIdsToUsers.get(blockId).keySet()) {
       User u = sUsers.get(userId);
       u.mBlocksCached.remove(blockId);
     }
@@ -172,7 +191,6 @@ public final class User implements Comparable<User> {
    * order of (highest user cost, lowest block priority)
    */
   public static Iterator<Long> getBlockIterator() {
-    Set<Long> blocksSeen = new HashSet<Long>();
     List<Long> blocksToEvict = new ArrayList<>();
 
     List<User> userObjects = new ArrayList<>(sUsers.values());
@@ -292,14 +310,14 @@ public final class User implements Comparable<User> {
       return Double.MAX_VALUE;
     }
     double cost = 0;
-    for (Long blockId : mBlocksCached) {
+    for (Long blockId : mBlocksCached.keySet()) {
       double usersCachingBlock = (double) sBlockIdsToUsers.get(blockId).size();
 
       //UNKNOWN_USER never pays its share for its blocks.
       //usersCachingBlock will always be greater than 0 because
       //by this point, the user calling this method is guaranteed
       //not to be UNKNOWN_USER.
-      if (sBlockIdsToUsers.get(blockId).contains("UNKNOWN_USER")) {
+      if (sBlockIdsToUsers.get(blockId).containsKey("UNKNOWN_USER")) {
         usersCachingBlock--;
       }
 
@@ -318,8 +336,10 @@ public final class User implements Comparable<User> {
   }
 
   /**
-   * Compares users by descending cost, then by lexicographic order of user ID.
-   * Because user IDs are unique, this ensures a total order.
+   * Compares users by descending cost, then randomly between users
+   * of same cost to ensure that some users are not consistently
+   * priveleged over others. The ordering remains consistent over a
+   * ten-second period.
    *
    * @param u the user to compare to
    *
@@ -353,7 +373,7 @@ public final class User implements Comparable<User> {
    */
   private Set<Long> getCachedBlocksByPriority() {
     return mBlocksToPriority.entrySet().stream()
-      .filter(p -> mBlocksCached.contains(p.getKey()))
+      .filter(p -> mBlocksCached.containsKey(p.getKey()))
       .sorted(Map.Entry.<Long, Double>comparingByValue())
       .collect(Collectors.toMap(Map.Entry::getKey,
                      Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new))
@@ -388,7 +408,7 @@ public final class User implements Comparable<User> {
 
     while (blocks.hasNext() && bytes < x) {
       long blockId = blocks.next();
-      if (mBlocksCached.contains(blockId) && getBlockPriority(blockId) > priority) {
+      if (mBlocksCached.containsKey(blockId) && getBlockPriority(blockId) > priority) {
         return true;
       }
       bytes += sBlockIdsToSizes.get(blockId);
@@ -422,9 +442,10 @@ public final class User implements Comparable<User> {
       if (sBlockIdsToUsers.get(otherBlockId).size() == 1) {
         onUserCacheBlock("UNKNOWN_USER", otherBlockId, sBlockIdsToSizes.get(otherBlockId));
       }
-
+      LOG.warn("User {} had to evict file {}", mId, otherBlockId);
       removeBlock(otherBlockId);
     }
+    LOG.warn("User {} has cost {} out of budget {}", mId, getCost(), BUDGET);
   }
 
   /**
