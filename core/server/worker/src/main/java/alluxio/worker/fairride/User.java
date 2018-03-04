@@ -36,8 +36,7 @@ public final class User implements Comparable<User> {
   private static Map<Long, Long> sBlockIdsToSizes =  new ConcurrentHashMap<>();
   //TODO(caitscarberry): verify whether blocks are immutable
 
-  private static final long BUDGET =
-      Configuration.getBytes(PropertyKey.WORKER_MEMORY_SIZE) / 3;
+  private static final long BUDGET = 264 * 1024 * 1024;
 
   private static final boolean DO_BLOCKING =
       Configuration.getBoolean(PropertyKey.FAIRRIDE_BLOCKING_ON);
