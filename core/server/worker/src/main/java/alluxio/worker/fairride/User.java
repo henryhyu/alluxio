@@ -36,7 +36,7 @@ public final class User implements Comparable<User> {
   private static Map<Long, Long> sBlockIdsToSizes =  new ConcurrentHashMap<>();
   //TODO(caitscarberry): verify whether blocks are immutable
 
-  private static final long BUDGET = 264 * 1024 * 1024;
+  private static final long BUDGET = 128 * 1024 * 1024;
 
   private static final boolean DO_BLOCKING =
       Configuration.getBoolean(PropertyKey.FAIRRIDE_BLOCKING_ON);
@@ -125,7 +125,7 @@ public final class User implements Comparable<User> {
         double pBlock = 1.0 / ((double) (sBlockIdsToUsers.get(blockId).size() + 1));
 
         if (DO_BLOCKING) {
-          LOG.warn("Delaying on block " + Long.toString(blockId) + " for user " + userId);
+          //LOG.warn("Delaying on block " + Long.toString(blockId) + " for user " + userId);
           try {
             Thread.sleep((int) (diskDelay * pBlock));
           } catch (InterruptedException e) {
@@ -133,12 +133,12 @@ public final class User implements Comparable<User> {
           }
         }
       } else {
-        LOG.warn(
+        /*LOG.warn(
             "Treating access to block {} as miss for user {}; delaying {} ms",
             Long.toString(blockId),
             userId,
             diskDelay
-        );
+        );*/
         //Do this irrespective of whether blocking is enabled, because
         //evicting files that are over budget seems to be part of
         //max-min fairness and not a modification added by FairRide.
@@ -152,7 +152,7 @@ public final class User implements Comparable<User> {
       //after the delay, cache the file for the user
       u.onUserCacheBlock(userId, blockId, sBlockIdsToSizes.get(blockId));
     } else {
-      LOG.warn("User {} is caching file {}", userId, blockId);
+      //LOG.warn("User {} is caching file {}", userId, blockId);
       u.enforceBudget();
     }
   }
